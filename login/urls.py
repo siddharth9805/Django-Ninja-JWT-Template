@@ -1,15 +1,15 @@
 from ninja import Router
 from ninja_jwt.authentication import AsyncJWTAuth
-from schemas import User, TokenSchema, UserProfileSchema
-from models import User,UserProfile
+from .schemas import UserSchema, TokenSchema, UserProfileSchema,UserLoginSchema
+from .models import User,UserProfile
 from django.http import HttpResponse
 from ninja_jwt.tokens import RefreshToken,AccessToken
 
 router = Router()
 
-@router.post('/login')
-async def login(request,payload:User):
-    user = await User.objects.filter(username=payload.username).first()
+@router.post('/login',response=TokenSchema)
+def login(request,payload:UserLoginSchema):
+    user = User.objects.filter(username=payload.username).first()
     
     if not user:
         return HttpResponse("No such user", 404)
@@ -39,4 +39,7 @@ def userView(request,payload:TokenSchema):
         userdetail=UserProfile.objects.create(**seralized.dict())
         userdetail.save()
     else:
-        pass
+        userdetail.role_name=user.get_role_name()
+        userdetail.save()
+    
+    return HttpResponse(userdetail.username,200)

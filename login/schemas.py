@@ -14,3 +14,7 @@ class UserProfileSchema(ModelSchema):
 
 class TokenSchema(Schema):
     token:str
+
+class UserLoginSchema(Schema):
+    username:str
+    password:str
