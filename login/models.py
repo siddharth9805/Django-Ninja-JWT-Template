@@ -13,6 +13,7 @@ class User(AbstractUser):
     username=models.CharField(max_length=225,unique=True)
     role=models.ForeignKey(Role,on_delete=models.SET_NULL,null=True)
     last_login=models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    access_token=models.CharField(max_length=725,null=True,blank=True)
 
     def get_role_name(self):
         return self.role.name if self.role.name else None

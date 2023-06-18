@@ -1,9 +1,9 @@
 from ninja import Router
-from ninja_jwt.authentication import AsyncJWTAuth
-from .schemas import UserSchema, TokenSchema, UserProfileSchema,UserLoginSchema
+from .schemas import TokenSchema, UserProfileSchema,UserLoginSchema
 from .models import User,UserProfile
 from django.http import HttpResponse
-from ninja_jwt.tokens import RefreshToken,AccessToken
+from ninja_jwt.tokens import RefreshToken
+from ninja_jwt.authentication import JWTAuth
 
 router = Router()
 
@@ -13,24 +13,27 @@ def login(request,payload:UserLoginSchema):
     
     if not user:
         return HttpResponse("No such user", 404)
-    if not user.check_password(payload.password):
+    if user.password != payload.password:
         return HttpResponse("check password", 401)
     
     refresh_token = RefreshToken.for_user(user)
     access_token = refresh_token.access_token
+    
+    user.access_token=access_token.__str__()
+    user.save()
 
-    return HttpResponse(access_token,200)
+    token={"token":access_token.__str__()}
 
-@router.post('/userView', auth=AsyncJWTAuth)
+    return token
+
+@router.post('/userView',response=UserProfileSchema,auth=JWTAuth())
 def userView(request,payload:TokenSchema):
     token=payload.token
-    token_data=AccessToken(token)
-    user_id=token_data["username"]
 
-    if not token_data:
-        return HttpResponse("No Token", 404)
+    user = User.objects.filter(access_token=token).first()
+    if not user:
+        return HttpResponse("No such user", 404)
     
-    user=User.objects.filter(username=user_id).first()
     userdetail= UserProfile.objects.filter(username=user.username).first()
 
     if userdetail is None:
@@ -42,4 +45,4 @@ def userView(request,payload:TokenSchema):
         userdetail.role_name=user.get_role_name()
         userdetail.save()
     
-    return HttpResponse(userdetail.username,200)
+    return userdetail
