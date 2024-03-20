@@ -65,10 +65,6 @@ Example usage of the authentication system can be found in `ninja_jwt/api.py`. T
 
 For common issues related to Django or JWT authentication, consult the official documentation or the project's issue tracker.
 
-## Contributors
-
-List of contributors to the project.
-
 ## License
 
-Specify the project's license here.
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for more details.
